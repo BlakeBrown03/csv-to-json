@@ -7,7 +7,7 @@ fn main() {
         .read_line(&mut file_path)
         .expect("Error reading file path");
     let data: String = convert_to_json(&read_file(&file_path.trim()));
-    fs::write("./username.json", data).unwrap();
+    fs::write("./your-json.json", data).unwrap();
 }
 
 fn read_file(file_path: &str) -> Vec<Vec<String>> {
