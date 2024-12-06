@@ -1,7 +1,8 @@
-use std::fs;
+use std::{collections::HashMap, fs};
 
 fn main() {
-    println!("JSON: {:?}", convert_to_json(&read_file("./username.csv")));
+    let data: String = convert_to_json(&read_file("./username.csv"));
+    fs::write("./username.json", data).unwrap();
 }
 
 fn read_file(file_path: &str) -> Vec<Vec<String>> {
@@ -14,16 +15,27 @@ fn read_file(file_path: &str) -> Vec<Vec<String>> {
 }
 
 fn convert_to_json(data: &Vec<Vec<String>>) -> String {
-    let mut json: String = "{".to_string();
-    let length: u32 = data.len() as u32;
-    for i in 0..length {
+    let mut json: HashMap<String, Vec<String>> = HashMap::new();
+    let headers: Vec<String> = data[0].clone();
+    for i in 0..data.len() as u32 {
         for j in 0..data[i as usize].len() as u32 {
             if i == 0 {
-                json.push_str(&format!("{}:", data[i as usize][j as usize]));
+                json.insert(data[i as usize][j as usize].to_string(), Vec::new());
+            } else if data[i as usize][j as usize].len() == 0 {
+                break;
             } else {
-                json.push_str(&format!("{} :", data[i as usize][j as usize]));
+                json.entry(headers[j as usize].to_string())
+                    .and_modify(|e| e.push(data[i as usize][j as usize].to_string()));
             }
         }
     }
-    return json.to_string();
+    let mut final_string: String = String::from("[\n");
+    for (key, value) in json.iter() {
+        if key == data[0][0].as_str() {
+            final_string.push_str(&format!("\t{{\n\t\t\"{}\": {:?}\n\t}}\n", key, value));
+            break;
+        }
+        final_string.push_str(&format!("\t{{\n\t\t\"{}\": {:?}\n\t}},\n", key, value));
+    }
+    return final_string + "]";
 }
