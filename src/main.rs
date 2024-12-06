@@ -1,7 +1,12 @@
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, io};
 
 fn main() {
-    let data: String = convert_to_json(&read_file("./username.csv"));
+    println!("Please enter the file path for the CSV file you want to convert to JSON");
+    let mut file_path: String = String::new();
+    io::stdin()
+        .read_line(&mut file_path)
+        .expect("Error reading file path");
+    let data: String = convert_to_json(&read_file(&file_path.trim()));
     fs::write("./username.json", data).unwrap();
 }
 
