@@ -1,15 +1,15 @@
-use std::{collections::HashMap, fs, io};
+use std::{collections::HashMap, fs, hash::Hash, io, string};
 
 fn main() {
     if fs::metadata("./your-json.json").is_ok() {
         fs::remove_file("./your-json.json").unwrap();
     }
-    println!("Please enter the file path for the CSV file you want to convert to JSON");
+    // println!("Please enter the file path for the CSV file you want to convert to JSON");
     let mut file_path: String = String::new();
-    io::stdin()
-        .read_line(&mut file_path)
-        .expect("Error reading file path");
-    let data: String = convert_to_json(&read_file(&file_path.trim()));
+    // io::stdin()
+    //   .read_line(&mut file_path)
+    //  .expect("Error reading file path");
+    let data: String = convert_to_json(&read_file("./Meraki_End_of_Sale_Product_Summary.csv"));
     fs::write("./your-json.json", data).unwrap();
 }
 
@@ -44,25 +44,25 @@ fn read_file(file_path: &str) -> Vec<Vec<String>> {
 }
 
 fn convert_to_json(data: &Vec<Vec<String>>) -> String {
-    let mut json: HashMap<String, Vec<String>> = HashMap::new();
+    let mut json: HashMap<String, HashMap<String, String>> = HashMap::new();
     let headers: Vec<String> = data[0].clone();
+    // println!("{:?}", data);
     for i in 0..data.len() as u32 {
-        for j in 0..headers.len() as u32 {
-            if i == 0 {
-                json.insert(data[i as usize][j as usize].to_string(), Vec::new());
-            } else if data[i as usize][j as usize].len() == 0 {
-                break;
-            } else {
-                json.entry(headers[j as usize].to_string())
-                    .and_modify(|e| e.push(data[i as usize][j as usize].to_string()));
-            }
+        let mut inside: HashMap<String, String> = HashMap::new();
+        json.insert(data[i as usize][0].clone(), HashMap::new());
+        for j in 1..headers.len() as u32 {
+            inside.insert(
+                headers[j as usize].clone(),
+                data[i as usize][j as usize].clone(),
+            );
+            json.insert(data[i as usize][0].clone(), inside.clone());
         }
     }
     let mut final_string: String = String::from("[\n");
     for (key, value) in json.iter() {
         if key == data[0][0].as_str() {
             final_string.push_str(&format!("\t{{\n\t\t\"{}\": {:?}\n\t}}\n", key, value));
-            break;
+            continue;
         }
         final_string.push_str(&format!("\t{{\n\t\t\"{}\": {:?}\n\t}},\n", key, value));
     }
